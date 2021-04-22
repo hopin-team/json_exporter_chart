@@ -1,0 +1,16 @@
+{{- if .Values.rbac.create }}
+apiVersion: {{ template "rbac.apiVersion" . }}
+kind: ClusterRole
+metadata:
+  name: {{ template "prometheus-json-exporter.fullname" . }}
+  labels:
+    app: {{ template "prometheus-json-exporter.name" . }}
+    chart: {{ template "prometheus-json-exporter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+  - apiGroups: [""]
+    resources: ["secrets","configmap"]
+    resourceNames: ["{{ template "prometheus-json-exporter.fullname" . }}"]
+    verbs: ["get"]
+{{- end }}

@@ -1,0 +1,15 @@
+{{- if .Values.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "prometheus-json-exporter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "prometheus-json-exporter.name" . }}
+    chart: {{ template "prometheus-json-exporter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  config.yml: |
+    {{ tpl .Values.config . | nindent 4 }}
+{{- end }}

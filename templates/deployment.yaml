@@ -1,0 +1,78 @@
+apiVersion: {{ template "deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ template "prometheus-json-exporter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "prometheus-json-exporter.name" . }}
+    chart: {{ template "prometheus-json-exporter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "prometheus-json-exporter.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "prometheus-json-exporter.name" . }}
+        release: {{ .Release.Name }}
+        {{- if .Values.pod.labels }}
+{{ toYaml .Values.pod.labels | indent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.priorityClassName }}
+      priorityClassName: "{{ . }}"
+      {{- end }}
+    {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.command }}
+          command: {{ toYaml .Values.command | nindent 12 -}}
+          {{- end}}
+          ports:
+            - name: container-port
+              containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            - name: vol-prometheus-json-exporter
+              mountPath: /config.yml
+              subPath: config.yml
+     {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.securityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      serviceAccount: {{ template "prometheus-json-exporter.serviceAccountName" . }}
+      serviceAccountName: {{ template "prometheus-json-exporter.serviceAccountName" . }}
+      volumes:
+      {{- if .Values.configSecretMount.enabled }}
+      - secret:
+          secretName: {{ .Values.configSecretMount.secret.secretName }}
+          defaultMode: {{ .Values.configSecretMount.secret.defaultMode }}
+      {{- else }}
+      - configMap:
+          defaultMode: 420
+          name: {{ template "prometheus-json-exporter.fullname" . }}
+      {{- end }}
+        name: vol-prometheus-json-exporter

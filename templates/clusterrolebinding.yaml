@@ -1,0 +1,19 @@
+{{ if .Values.rbac.create }}
+apiVersion: {{ template "rbac.apiVersion" . }}
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "prometheus-json-exporter.fullname" . }}
+  labels:
+    app: {{ template "prometheus-json-exporter.name" . }}
+    chart: {{ template "prometheus-json-exporter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "prometheus-json-exporter.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ template "prometheus-json-exporter.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io
+{{ end }}
