@@ -3,7 +3,7 @@ apiVersion: v1
 appVersion: "v0.3.0"
 description: A Helm chart for prometheus json-exporter
 name: prometheus-json-exporter
-version: 0.1.1
+version: 0.1.2
 home: https://github.com/prometheus-community/json_exporter
 sources:
 - https://github.com/prometheus-community/json_exporter
